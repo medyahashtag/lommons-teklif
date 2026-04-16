@@ -39,6 +39,7 @@
             line-height: 1.6;
             /* Support for mobile safe areas */
             padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+            overscroll-behavior: none; /* Prevent pull-to-refresh and bounce */
         }
 
         /* Animated Background */
@@ -102,7 +103,7 @@
             width: 100%;
             height: 100%;
             position: relative;
-            touch-action: none;
+            touch-action: pan-y; /* Allow vertical scrolling within slides */
             perspective: 1000px;
         }
 
@@ -236,11 +237,11 @@
             background: var(--bg-card);
             border: 1px solid var(--glass-border);
             color: white;
-            padding: 12px 20px;
+            padding: 14px 24px; /* Slightly larger for better touch target */
             border-radius: 100px;
             cursor: pointer;
-            font-size: 10px;
-            font-weight: 600;
+            font-size: 11px;
+            font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 1.5px;
             transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
@@ -248,9 +249,10 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 6px;
+            gap: 8px;
             flex: 1;
-            max-width: 140px;
+            max-width: 160px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
         }
 
         .nav-btn:hover {
@@ -979,7 +981,7 @@
             prevBtn.style.pointerEvents = currentSlide === 0 ? 'none' : 'auto';
             
             if (currentSlide === totalSlides - 1) {
-                nextBtn.innerHTML = 'BAŞLA <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
+                nextBtn.innerHTML = 'BAŞA DÖN <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>';
             } else {
                 nextBtn.innerHTML = 'İLERİ <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
             }
@@ -989,6 +991,9 @@
             if (currentSlide < totalSlides - 1) {
                 currentSlide++;
                 updateSlide('next');
+            } else {
+                currentSlide = 0;
+                updateSlide('prev');
             }
         });
 
@@ -1015,13 +1020,7 @@
             const diffY = touchStartY - touchEndY;
             const diffX = touchStartX - touchEndX;
 
-            if (Math.abs(diffY) > 50 && Math.abs(diffY) > Math.abs(diffX)) {
-                if (diffY > 0) { // Swipe Up
-                    if (currentSlide < totalSlides - 1) { currentSlide++; updateSlide('next'); }
-                } else { // Swipe Down
-                    if (currentSlide > 0) { currentSlide--; updateSlide('prev'); }
-                }
-            } else if (Math.abs(diffX) > 50) {
+            if (Math.abs(diffX) > 50 && Math.abs(diffX) > Math.abs(diffY)) {
                 if (diffX > 0) { // Swipe Left
                     if (currentSlide < totalSlides - 1) { currentSlide++; updateSlide('next'); }
                 } else { // Swipe Right
