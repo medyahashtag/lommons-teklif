@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800;900&family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-dark: #0f1115;
+            --bg-dark: #0a0c10;
             --bg-card: rgba(255, 255, 255, 0.03);
             --accent: #b2ff40;
             --accent-glow: rgba(178, 255, 64, 0.3);
@@ -18,6 +18,7 @@
             --glass-border: rgba(255, 255, 255, 0.08);
             --font-main: 'Inter', sans-serif;
             --font-display: 'Poppins', sans-serif;
+            --card-glow: rgba(178, 255, 64, 0.1);
         }
 
         * {
@@ -36,6 +37,64 @@
             overflow: hidden;
             position: fixed;
             line-height: 1.6;
+            /* Support for mobile safe areas */
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+        }
+
+        /* Animated Background */
+        .bg-mesh {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(178, 255, 64, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(178, 255, 64, 0.03) 0%, transparent 50%);
+            animation: meshMove 20s ease-in-out infinite alternate;
+        }
+
+        .bg-mesh::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.03;
+            pointer-events: none;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.apache.org/licenses/of/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+
+        @keyframes meshMove {
+            0% { transform: scale(1) translate(0, 0); }
+            100% { transform: scale(1.1) translate(2%, 2%); }
+        }
+
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            background: var(--accent);
+            border-radius: 50%;
+            opacity: 0.1;
+            filter: blur(1px);
+            animation: float 15s infinite linear;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0) translateX(0); opacity: 0; }
+            50% { opacity: 0.2; }
+            100% { transform: translateY(-100vh) translateX(20px); opacity: 0; }
         }
 
         /* Slide Engine */
@@ -56,12 +115,14 @@
             display: flex;
             flex-direction: column;
             justify-content: center;
-            padding: 60px 32px;
+            padding: 140px 24px 160px; /* Increased padding to avoid header/footer overlap */
             opacity: 0;
             visibility: hidden;
             transition: all 0.8s cubic-bezier(0.19, 1, 0.22, 1);
             transform: scale(0.95) translateY(20px);
             z-index: 1;
+            overflow-y: auto; /* Allow internal scroll if content is too tall on very small screens */
+            -webkit-overflow-scrolling: touch;
         }
 
         .slide.active {
@@ -79,45 +140,57 @@
         /* UI Elements */
         .nav-header {
             position: absolute;
-            top: 32px;
+            top: 0;
             left: 0;
             width: 100%;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0 32px;
+            padding: 24px;
             z-index: 100;
+            pointer-events: none;
+            background: linear-gradient(to bottom, var(--bg-dark) 60%, transparent);
+            backdrop-filter: blur(8px);
         }
 
         .logo-area {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 8px;
+            pointer-events: auto;
         }
 
         .logo-dot {
-            width: 8px;
-            height: 8px;
+            width: 6px;
+            height: 6px;
             background: var(--accent);
             border-radius: 50%;
-            box-shadow: 0 0 15px var(--accent);
+            box-shadow: 0 0 10px var(--accent);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 10px var(--accent); }
+            50% { transform: scale(1.2); box-shadow: 0 0 20px var(--accent); }
+            100% { transform: scale(1); box-shadow: 0 0 10px var(--accent); }
         }
 
         .logo-text {
             font-family: var(--font-display);
             font-weight: 800;
-            font-size: 14px;
-            letter-spacing: 2px;
+            font-size: 12px;
+            letter-spacing: 1px;
             text-transform: uppercase;
         }
 
         .progress-container {
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: 12px;
             flex-grow: 1;
-            max-width: 300px;
-            margin: 0 24px;
+            max-width: 180px;
+            margin: 0 16px;
+            pointer-events: auto;
         }
 
         .progress-track {
@@ -138,39 +211,46 @@
 
         .slide-num {
             font-family: monospace;
-            font-size: 12px;
+            font-size: 10px;
             color: var(--text-secondary);
-            width: 45px;
+            width: 35px;
+            text-align: right;
         }
 
         .nav-footer {
             position: absolute;
-            bottom: 40px;
+            bottom: 0;
             width: 100%;
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 24px;
+            gap: 16px;
             z-index: 100;
-            padding: 0 32px;
+            padding: 24px;
+            background: linear-gradient(to top, var(--bg-dark) 60%, transparent);
+            padding-bottom: max(24px, env(safe-area-inset-bottom));
+            backdrop-filter: blur(8px);
         }
 
         .nav-btn {
             background: var(--bg-card);
             border: 1px solid var(--glass-border);
             color: white;
-            padding: 16px 32px;
+            padding: 12px 20px;
             border-radius: 100px;
             cursor: pointer;
-            font-size: 12px;
+            font-size: 10px;
             font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 2px;
+            letter-spacing: 1.5px;
             transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
             backdrop-filter: blur(12px);
             display: flex;
             align-items: center;
-            gap: 8px;
+            justify-content: center;
+            gap: 6px;
+            flex: 1;
+            max-width: 140px;
         }
 
         .nav-btn:hover {
@@ -187,183 +267,350 @@
             background: var(--accent);
             color: #000;
             border: none;
-            box-shadow: 0 10px 30px rgba(178, 255, 64, 0.2);
+            box-shadow: 0 8px 20px rgba(178, 255, 64, 0.2);
+            position: relative;
         }
 
-        .nav-btn.primary:hover {
-            background: #c4ff6b;
-            box-shadow: 0 15px 40px rgba(178, 255, 64, 0.3);
+        .nav-btn.primary::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60%;
+            height: 4px;
+            background: var(--accent);
+            filter: blur(8px);
+            opacity: 0.4;
+            border-radius: 50%;
         }
 
         /* Typography */
         h1 {
             font-family: var(--font-display);
-            font-size: 64px;
+            font-size: clamp(32px, 9vw, 64px); /* Slightly smaller on mobile */
             font-weight: 900;
-            line-height: 1;
-            margin-bottom: 24px;
-            letter-spacing: -3px;
+            line-height: 1.1;
+            margin-bottom: 16px;
+            letter-spacing: -1.5px;
             text-transform: uppercase;
+            word-wrap: break-word;
+            max-width: 100%;
+            position: relative;
+        }
+
+        h1::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 120%;
+            height: 120%;
+            background: radial-gradient(circle, rgba(178, 255, 64, 0.05) 0%, transparent 70%);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .layered-heading {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 20px;
+        }
+
+        .heading-accent {
+            font-size: 11px;
+            letter-spacing: 4px;
+            color: var(--accent);
+            font-weight: 800;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            opacity: 0.8;
         }
 
         .accent-text {
             color: var(--accent);
             text-shadow: 0 0 20px var(--accent-glow);
+            position: relative;
+            display: inline-block;
+        }
+
+        .accent-text::after {
+            content: '';
+            position: absolute;
+            bottom: 4px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--accent);
+            transform: scaleX(0);
+            transform-origin: right;
+            transition: transform 0.6s cubic-bezier(0.19, 1, 0.22, 1);
+        }
+
+        .slide.active .accent-text::after {
+            transform: scaleX(1);
+            transform-origin: left;
+            transition-delay: 0.8s;
         }
 
         h2 {
             font-family: var(--font-display);
-            font-size: 36px;
+            font-size: clamp(22px, 6.5vw, 36px); /* Slightly smaller on mobile */
             font-weight: 800;
-            margin-bottom: 32px;
-            line-height: 1.1;
-            letter-spacing: -1px;
+            margin-bottom: 20px;
+            line-height: 1.2;
+            letter-spacing: -0.5px;
+            word-wrap: break-word;
         }
 
         .subtitle {
-            font-size: 22px;
+            font-size: clamp(16px, 4vw, 20px);
             color: var(--text-secondary);
-            max-width: 700px;
-            line-height: 1.4;
-            margin-bottom: 32px;
+            max-width: 100%;
+            line-height: 1.5;
+            margin-bottom: 24px;
             font-weight: 300;
+        }
+
+        .divider {
+            width: 40px;
+            height: 2px;
+            background: var(--accent);
+            margin: 24px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .divider::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, #fff, transparent);
+            animation: scan 3s infinite;
+        }
+
+        @keyframes scan {
+            0% { left: -100%; }
+            100% { left: 100%; }
         }
 
         /* Cards & Layouts */
         .glass-card {
             background: var(--bg-card);
-            backdrop-filter: blur(12px);
+            backdrop-filter: blur(16px);
             border: 1px solid var(--glass-border);
-            border-radius: 24px;
-            padding: 32px;
-            transition: all 0.4s ease;
+            border-radius: 20px;
+            padding: 24px;
+            transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .glass-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(178, 255, 64, 0.05) 0%, transparent 100%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
         }
 
         .glass-card:hover {
             border-color: rgba(178, 255, 64, 0.3);
             background: rgba(255, 255, 255, 0.05);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .glass-card:hover::before {
+            opacity: 1;
+        }
+
+        .glass-card.featured {
+            border-color: var(--accent-glow);
+            background: rgba(178, 255, 64, 0.03);
+            box-shadow: 0 0 40px rgba(178, 255, 64, 0.05);
+        }
+
+        .glass-card.featured::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(45deg, transparent 50%, var(--accent) 50%);
+            opacity: 0.2;
+        }
+
+        .card-icon {
+            width: 32px;
+            height: 32px;
+            margin-bottom: 16px;
+            color: var(--accent);
+            opacity: 0.8;
+        }
+
+        .slide-bg-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            object-fit: cover;
+            opacity: 0.15;
+            filter: grayscale(100%) blur(5px);
+            transition: transform 1.2s ease;
+        }
+
+        .slide.active .slide-bg-image {
+            transform: scale(1.1);
         }
 
         .bullets-list {
             list-style: none;
             display: flex;
             flex-direction: column;
-            gap: 24px;
+            gap: 16px;
         }
 
         .bullet-item {
             display: flex;
             align-items: flex-start;
-            gap: 20px;
-            font-size: 18px;
+            gap: 16px;
+            font-size: 15px;
             color: var(--text-secondary);
+            line-height: 1.4;
         }
 
         .bullet-icon {
-            width: 24px;
-            height: 24px;
+            width: 20px;
+            height: 20px;
             background: var(--accent);
-            border-radius: 6px;
+            border-radius: 50%;
             flex-shrink: 0;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-top: 4px;
-            box-shadow: 0 0 15px var(--accent-glow);
+            margin-top: 2px;
+            box-shadow: 0 0 10px var(--accent-glow);
         }
 
         .bullet-icon::after {
             content: '';
-            width: 8px;
-            height: 8px;
+            width: 6px;
+            height: 6px;
             border-right: 2px solid #000;
             border-bottom: 2px solid #000;
             transform: rotate(-45deg);
+            margin-bottom: 2px;
         }
 
         .grid-layout {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 20px;
+            gap: 12px;
             width: 100%;
         }
 
         .card-title {
             font-family: var(--font-display);
-            font-size: 16px;
+            font-size: 14px;
             font-weight: 800;
             color: var(--accent);
-            margin-bottom: 12px;
+            margin-bottom: 8px;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 0.5px;
         }
 
         .card-text {
-            font-size: 15px;
+            font-size: 13px;
             color: var(--text-secondary);
-            line-height: 1.6;
+            line-height: 1.5;
         }
 
         .highlight-banner {
             background: linear-gradient(90deg, var(--accent), #d4ff8a);
             color: #000;
-            padding: 32px;
-            border-radius: 24px;
-            margin-top: 32px;
+            padding: 24px;
+            border-radius: 20px;
+            margin-top: 20px;
             font-weight: 800;
-            font-size: 18px;
-            box-shadow: 0 20px 40px rgba(178, 255, 64, 0.15);
+            font-size: 15px;
+            box-shadow: 0 15px 30px rgba(178, 255, 64, 0.1);
+            line-height: 1.4;
         }
 
         .contact-info {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 24px;
-            margin-top: 40px;
+            gap: 16px;
+            margin-top: 32px;
         }
 
         .contact-item {
             display: flex;
             align-items: center;
-            gap: 20px;
-            font-size: 16px;
+            gap: 16px;
+            font-size: 14px;
             color: var(--text-secondary);
         }
 
         .contact-icon-circle {
-            width: 48px;
-            height: 48px;
+            width: 40px;
+            height: 40px;
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid var(--glass-border);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 20px;
+            font-size: 18px;
+            flex-shrink: 0;
         }
 
         /* Background Glows */
         .bg-glow {
             position: absolute;
-            width: 600px;
-            height: 600px;
-            background: radial-gradient(circle, rgba(178, 255, 64, 0.08) 0%, transparent 70%);
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(178, 255, 64, 0.06) 0%, transparent 70%);
             border-radius: 50%;
             pointer-events: none;
             z-index: 0;
-            filter: blur(60px);
+            filter: blur(40px);
         }
 
-        .glow-1 { top: -200px; right: -200px; }
-        .glow-2 { bottom: -200px; left: -200px; }
+        .glow-1 { top: -150px; right: -150px; animation: glowMove1 30s infinite alternate; }
+        .glow-2 { bottom: -150px; left: -150px; animation: glowMove2 35s infinite alternate; }
+
+        @keyframes glowMove1 {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(-50px, 50px); }
+        }
+
+        @keyframes glowMove2 {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, -50px); }
+        }
 
         /* Animations */
         .slide.active .anim {
-            animation: reveal 1s cubic-bezier(0.19, 1, 0.22, 1) both;
+            animation: reveal 0.8s cubic-bezier(0.19, 1, 0.22, 1) both;
         }
 
         @keyframes reveal {
-            from { opacity: 0; transform: translateY(30px); }
+            from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
@@ -375,14 +622,25 @@
 
         /* Desktop Optimization */
         @media (min-width: 1024px) {
-            .slide { padding: 80px 120px; }
-            h1 { font-size: 120px; }
-            h2 { font-size: 64px; }
-            .grid-layout { grid-template-columns: repeat(2, 1fr); gap: 32px; }
+            .slide { padding: 80px 120px; overflow-y: hidden; }
+            h1 { font-size: 100px; line-height: 0.95; }
+            h2 { font-size: 56px; }
+            .subtitle { font-size: 22px; }
+            .grid-layout { grid-template-columns: repeat(2, 1fr); gap: 24px; }
             .grid-layout.three { grid-template-columns: repeat(3, 1fr); }
-            .contact-info { grid-template-columns: repeat(2, 1fr); }
-            .nav-header { padding: 0 80px; top: 48px; }
-            .nav-footer { padding: 0 80px; bottom: 60px; }
+            .contact-info { grid-template-columns: repeat(2, 1fr); gap: 24px; }
+            .nav-header { padding: 0 64px; top: 40px; }
+            .logo-text { font-size: 14px; }
+            .progress-container { max-width: 300px; }
+            .slide-num { font-size: 12px; }
+            .nav-footer { padding: 0 64px; bottom: 48px; background: transparent; }
+            .nav-btn { font-size: 12px; padding: 16px 32px; flex: none; }
+            .glass-card { padding: 32px; }
+            .bullet-item { font-size: 18px; }
+            .card-title { font-size: 16px; }
+            .card-text { font-size: 15px; }
+            .highlight-banner { font-size: 18px; padding: 32px; }
+            .bg-glow { width: 600px; height: 600px; }
         }
 
         /* Custom Scrollbar for cards if needed */
@@ -391,19 +649,23 @@
 
         .footer-tag {
             position: absolute;
-            bottom: 40px;
-            left: 80px;
-            font-size: 10px;
+            bottom: 24px;
+            left: 24px;
+            font-size: 9px;
             text-transform: uppercase;
-            letter-spacing: 3px;
+            letter-spacing: 2px;
             color: var(--text-secondary);
-            opacity: 0.4;
+            opacity: 0.3;
             display: none;
+            z-index: 101;
+            pointer-events: none;
         }
         @media (min-width: 1024px) { .footer-tag { display: block; } }
     </style>
 </head>
 <body>
+    <div class="bg-mesh"></div>
+    <div class="particles" id="particles"></div>
     <div class="bg-glow glow-1"></div>
     <div class="bg-glow glow-2"></div>
 
@@ -418,18 +680,19 @@
                 <div class="progress-fill" id="progressBar"></div>
             </div>
         </div>
-        <div style="font-size: 10px; font-weight: 800; letter-spacing: 2px; color: var(--text-secondary);">EST. 2024</div>
+        <div style="font-size: 10px; font-weight: 800; letter-spacing: 2px; color: var(--text-secondary);">EST. 2026</div>
     </div>
 
     <div class="presentation-container" id="slideContainer">
         <!-- Slide 1: Intro -->
         <section class="slide active">
+            <img src="https://picsum.photos/seed/luxury-living/1920/1080?blur=10" class="slide-bg-image" alt="" referrerPolicy="no-referrer">
             <div class="anim">
-                <div style="font-size: 14px; letter-spacing: 5px; color: var(--accent); font-weight: 800; margin-bottom: 16px; text-transform: uppercase;">PROPOSAL</div>
+                <div class="heading-accent">PROPOSAL</div>
                 <h1>LAM<span class="accent-text">MONS</span></h1>
                 <div class="subtitle">Stratejik Büyüme ve Dijital Operasyon Teklifi</div>
-                <div style="margin-top: 60px; display: flex; align-items: center; gap: 20px;">
-                    <div style="width: 40px; height: 1px; background: var(--accent);"></div>
+                <div class="divider"></div>
+                <div style="display: flex; align-items: center; gap: 20px;">
                     <div style="font-size: 12px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-secondary);">
                         Hazırlayan: <span style="color: #fff; font-weight: 800;">MedyaHashtag (Özgür)</span>
                     </div>
@@ -439,12 +702,18 @@
 
         <!-- Slide 2: Vision -->
         <section class="slide">
-            <h2 class="anim">Üreticiden <br><span class="accent-text">“Otorite Markaya”</span> Geçiş</h2>
-            <div class="glass-card anim d-1">
+            <img src="https://picsum.photos/seed/modern-interior/1920/1080?blur=10" class="slide-bg-image" alt="" referrerPolicy="no-referrer">
+            <div class="layered-heading anim">
+                <span class="heading-accent">Vizyon</span>
+                <h2>Üreticiden <br><span class="accent-text">“Otorite Markaya”</span> Geçiş</h2>
+            </div>
+            <div class="glass-card featured anim d-1">
+                <div class="card-accent-line"></div>
+                <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
                 <ul class="bullets-list">
                     <li class="bullet-item">
                         <div class="bullet-icon"></div>
-                        <span>Pazar yerlerine bağımlılığı azaltan güçlü bir marka yapısı</span>
+                        <span>Pazar yerlerine <span class="accent-text" style="text-shadow: none;">bağımlılığı azaltan</span> güçlü bir marka yapısı</span>
                     </li>
                     <li class="bullet-item">
                         <div class="bullet-icon"></div>
@@ -460,17 +729,25 @@
 
         <!-- Slide 3: Phase A -->
         <section class="slide">
-            <h2 class="anim">A. Kesintisiz Geçiş ve <br><span class="accent-text">Dijital Karargah</span></h2>
+            <img src="https://picsum.photos/seed/architectural/1920/1080?blur=10" class="slide-bg-image" alt="" referrerPolicy="no-referrer">
+            <div class="layered-heading anim">
+                <span class="heading-accent">Faz A</span>
+                <h2>Kesintisiz Geçiş ve <br><span class="accent-text">Dijital Karargah</span></h2>
+            </div>
             <div class="grid-layout anim d-1">
-                <div class="glass-card">
+                <div class="glass-card featured anim d-1">
+                    <div class="card-accent-line"></div>
+                    <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
                     <div class="card-title">Sıfır Risk, Kesintisiz Yayın</div>
                     <div class="card-text">Tüm geliştirmeler kapalı bir sub-domain üzerinde yürütülür. Mevcut site aktif kalır.</div>
                 </div>
-                <div class="glass-card">
+                <div class="glass-card anim d-2">
+                    <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
                     <div class="card-title">Mükemmel Geçiş</div>
                     <div class="card-text">Yeni sistem yalnızca tamamen hazır olduğunda ana domaine taşınır.</div>
                 </div>
-                <div class="glass-card" style="grid-column: 1 / -1;">
+                <div class="glass-card anim d-3" style="grid-column: 1 / -1;">
+                    <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
                     <div class="card-title">Yeni Nesil Mimari</div>
                     <div class="card-text">Google, ChatGPT ve Perplexity gibi yapay zeka sistemlerinin markayı daha iyi tanıyabileceği güçlü bir altyapı kurulur.</div>
                 </div>
@@ -479,21 +756,30 @@
 
         <!-- Slide 4: Phase B -->
         <section class="slide">
-            <h2 class="anim">B. Saha Operasyonu ve <br><span class="accent-text">Bayi Kaldıraç Etkisi</span></h2>
+            <img src="https://picsum.photos/seed/luxury-furniture/1920/1080?blur=10" class="slide-bg-image" alt="" referrerPolicy="no-referrer">
+            <div class="layered-heading anim">
+                <span class="heading-accent">Faz B</span>
+                <h2>Saha Operasyonu ve <br><span class="accent-text">Bayi Kaldıraç Etkisi</span></h2>
+            </div>
             <div class="grid-layout anim d-1">
-                <div class="glass-card">
+                <div class="glass-card featured anim d-1">
+                    <div class="card-accent-line"></div>
+                    <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                     <div class="card-title">Yerel PR Elçileri</div>
                     <div class="card-text">Bayiler, markanın güçlü ve tutarlı temsilcilerine dönüştürülür.</div>
                 </div>
-                <div class="glass-card">
+                <div class="glass-card anim d-2">
+                    <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
                     <div class="card-title">Hızlı Aksiyon Paketleri</div>
                     <div class="card-text">Lansman ve kampanyalar için basıma hazır materyaller hazırlanır.</div>
                 </div>
-                <div class="glass-card">
+                <div class="glass-card anim d-3">
+                    <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                     <div class="card-title">Merkezi Bulut Arşivi</div>
                     <div class="card-text">7/24 erişilebilir, düzenli ve yüksek kaliteli ortak içerik havuzu.</div>
                 </div>
-                <div class="glass-card">
+                <div class="glass-card anim d-4">
+                    <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
                     <div class="card-title">Profesyonel İletişim</div>
                     <div class="card-text">Bayi iletişim dili ve WhatsApp grup yönetimi profesyonelce planlanır.</div>
                 </div>
@@ -502,22 +788,31 @@
 
         <!-- Slide 5: Phase C -->
         <section class="slide">
-            <h2 class="anim">C. Yeni Nesil Prodüksiyon ve <br><span class="accent-text">Sosyal Medya</span></h2>
+            <img src="https://picsum.photos/seed/luxury-fabric/1920/1080?blur=10" class="slide-bg-image" alt="" referrerPolicy="no-referrer">
+            <div class="layered-heading anim">
+                <span class="heading-accent">Faz C</span>
+                <h2>Yeni Nesil Prodüksiyon ve <br><span class="accent-text">Sosyal Medya</span></h2>
+            </div>
             <div class="grid-layout three anim d-1">
-                <div class="glass-card">
+                <div class="glass-card featured anim d-1">
+                    <div class="card-accent-line"></div>
+                    <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
                     <div class="card-title">Yapay Zeka</div>
                     <div class="card-text">Ürünler, premium atmosferlerde görselleştirilir.</div>
                 </div>
-                <div class="glass-card">
+                <div class="glass-card anim d-2">
+                    <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                     <div class="card-title">Aylık Plan</div>
                     <div class="card-text">Marka algısını güçlendiren 8 yüksek kaliteli paylaşım.</div>
                 </div>
-                <div class="glass-card">
+                <div class="glass-card anim d-3">
+                    <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
                     <div class="card-title">Reels</div>
                     <div class="card-text">Prestijli ve dikkat çekici video prodüksiyonları.</div>
                 </div>
             </div>
             <div class="glass-card anim d-2" style="margin-top: 20px;">
+                <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"/><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"/></svg>
                 <div class="card-title">YouTube & Çapraz Kullanım</div>
                 <div class="card-text">Kanal sürekliliği ve Reels içeriklerinin tüm platformlarda stratejik dağıtımı.</div>
             </div>
@@ -525,21 +820,30 @@
 
         <!-- Slide 6: Phase D -->
         <section class="slide">
-            <h2 class="anim">D. Reklam Yönetimi ve <br><span class="accent-text">Dijital Bilinirlik</span></h2>
+            <img src="https://picsum.photos/seed/marble-texture/1920/1080?blur=10" class="slide-bg-image" alt="" referrerPolicy="no-referrer">
+            <div class="layered-heading anim">
+                <span class="heading-accent">Faz D</span>
+                <h2>Reklam Yönetimi ve <br><span class="accent-text">Dijital Bilinirlik</span></h2>
+            </div>
             <div class="grid-layout anim d-1">
-                <div class="glass-card">
+                <div class="glass-card featured anim d-1">
+                    <div class="card-accent-line"></div>
+                    <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
                     <div class="card-title">Akıllı Bütçe Yönetimi</div>
                     <div class="card-text">Erişim ve görünürlüğü artıran verimli reklam modelleri tercih edilir.</div>
                 </div>
-                <div class="glass-card">
+                <div class="glass-card anim d-2">
+                    <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
                     <div class="card-title">Nokta Atışı Hedefleme</div>
                     <div class="card-text">Google ve video reklam modelleriyle doğrudan potansiyel müşteriye ulaşım.</div>
                 </div>
-                <div class="glass-card">
+                <div class="glass-card anim d-3">
+                    <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
                     <div class="card-title">Çoklu Platform</div>
                     <div class="card-text">İçerikler Instagram, YouTube ve Google ağlarında stratejik dağıtılır.</div>
                 </div>
-                <div class="glass-card">
+                <div class="glass-card anim d-4">
+                    <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"/></svg>
                     <div class="card-title">Marka Algısı</div>
                     <div class="card-text">Sosyal medya görünürlüğü ile dijital otorite konumlandırması sağlanır.</div>
                 </div>
@@ -548,34 +852,48 @@
 
         <!-- Slide 7: Results -->
         <section class="slide">
-            <h2 class="anim">6 Ayın Sonunda <br><span class="accent-text">Lammons Nerede Olacak?</span></h2>
+            <img src="https://picsum.photos/seed/luxury-home/1920/1080?blur=10" class="slide-bg-image" alt="" referrerPolicy="no-referrer">
+            <div class="layered-heading anim">
+                <span class="heading-accent">Sonuç</span>
+                <h2>6 Ayın Sonunda <br><span class="accent-text">Lammons Nerede Olacak?</span></h2>
+            </div>
             <div class="grid-layout anim d-1">
-                <div class="glass-card">
+                <div class="glass-card featured anim d-1">
+                    <div class="card-accent-line"></div>
+                    <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
                     <div class="card-title">Kendi Kendini Besleyen Sistem</div>
                     <div class="card-text">Organik trafik ve bayi paylaşımlarıyla sürekli büyüyen yapı.</div>
                 </div>
-                <div class="glass-card">
+                <div class="glass-card anim d-2">
+                    <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
                     <div class="card-title">Devasa Dijital Arşiv</div>
-                    <div class="card-text">Yıllarca kullanılabilecek özel görsel ve video kütüphanesi.</div>
+                    <div class="card-text">Yıllarca kullanılebilecek özel görsel ve video kütüphanesi.</div>
                 </div>
             </div>
             <div class="highlight-banner anim d-2">
-                1. faz başarıyla tamamlandığında, markanın yeni hedeflerine uygun 2. faz büyüme planı ayrıca sunulacaktır.
+                <span class="accent-text" style="color: #000; text-shadow: none;">1. faz</span> başarıyla tamamlandığında, markanın yeni hedeflerine ve güncel piyasa koşullarına uygun <span style="font-weight: 900;">2. faz teklifi ve büyüme planı</span> ayrıca sunulacaktır.
             </div>
         </section>
 
         <!-- Slide 8: Terms -->
         <section class="slide">
-            <h2 class="anim">Tam Kapsamlı <br><span class="accent-text">Operasyon Şartları</span></h2>
+            <img src="https://picsum.photos/seed/luxury-office/1920/1080?blur=10" class="slide-bg-image" alt="" referrerPolicy="no-referrer">
+            <div class="layered-heading anim">
+                <span class="heading-accent">Yatırım</span>
+                <h2>Tam Kapsamlı <br><span class="accent-text">Operasyon Şartları</span></h2>
+            </div>
             <p class="subtitle anim d-1">
                 Bu teklif; yazılım altyapısı, yapay zeka prodüksiyonu, saha operasyon yönetimi, reklam danışmanlığı ve marka stratejisini kapsar.
             </p>
             <div class="grid-layout anim d-2">
-                <div class="glass-card" style="border-color: var(--accent);">
+                <div class="glass-card featured anim d-1" style="border-color: var(--accent);">
+                    <div class="card-accent-line"></div>
+                    <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
                     <div class="card-title">Aylık Hizmet Bedeli</div>
-                    <div style="font-family: var(--font-display); font-size: 48px; font-weight: 900;">50.000 TL <span style="font-size: 18px; color: var(--text-secondary); font-weight: 400;">+ KDV</span></div>
+                    <div style="font-family: var(--font-display); font-size: 48px; font-weight: 900;"><span class="accent-text" style="text-shadow: none;">50.000 TL</span> <span style="font-size: 18px; color: var(--text-secondary); font-weight: 400;">+ KDV</span></div>
                 </div>
-                <div class="glass-card">
+                <div class="glass-card anim d-2">
+                    <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                     <div class="card-title">Proje Periyodu</div>
                     <div style="font-family: var(--font-display); font-size: 48px; font-weight: 900;">6 AY</div>
                 </div>
@@ -584,27 +902,37 @@
 
         <!-- Slide 9: Contact -->
         <section class="slide">
-            <h1 class="anim">Geleceği <br><span class="accent-text">Birlikte Kuralım.</span></h1>
-            <div class="contact-info anim d-1">
-                <div class="contact-item">
-                    <div class="contact-icon-circle">📍</div>
-                    <div>Folkart Towers No: 47 B İç Kapı: 2809 Bayraklı / İzmir</div>
-                </div>
-                <div class="contact-item">
-                    <div class="contact-icon-circle">📞</div>
-                    <div>0507 307 14 96</div>
-                </div>
-                <div class="contact-item">
-                    <div class="contact-icon-circle">✉️</div>
-                    <div>medyahashtag@gmail.com</div>
-                </div>
-                <div class="contact-item">
-                    <div class="contact-icon-circle">📱</div>
-                    <div>@medyahashtag</div>
-                </div>
+            <img src="https://picsum.photos/seed/architectural-detail/1920/1080?blur=10" class="slide-bg-image" alt="" referrerPolicy="no-referrer">
+            <div class="layered-heading anim">
+                <span class="heading-accent">İletişim</span>
+                <h1>Geleceği <br><span class="accent-text">Birlikte Kuralım.</span></h1>
             </div>
-            <div class="anim d-2" style="margin-top: 48px; font-family: var(--font-display); font-size: 24px; font-weight: 800; color: var(--accent);">
-                09:30 – 18:00
+            <div class="contact-info anim d-1">
+                <div class="glass-card featured anim d-1">
+                    <div class="card-accent-line"></div>
+                    <div class="contact-item">
+                        <div class="contact-icon-circle">📍</div>
+                        <div>Folkart Towers No: 47 B İç Kapı: 2809 Bayraklı / İzmir</div>
+                    </div>
+                </div>
+                <div class="glass-card anim d-2">
+                    <div class="contact-item">
+                        <div class="contact-icon-circle">📞</div>
+                        <div>0507 307 14 96</div>
+                    </div>
+                </div>
+                <div class="glass-card anim d-3">
+                    <div class="contact-item">
+                        <div class="contact-icon-circle">✉️</div>
+                        <div>medyahashtag@gmail.com</div>
+                    </div>
+                </div>
+                <div class="glass-card anim d-4">
+                    <div class="contact-item">
+                        <div class="contact-icon-circle">📱</div>
+                        <div>@medyahashtag</div>
+                    </div>
+                </div>
             </div>
         </section>
     </div>
@@ -620,7 +948,7 @@
         </button>
     </div>
 
-    <div class="footer-tag">LAMMONS STRATEGIC ROADMAP 2024 &copy; CONFIDENTIAL</div>
+    <div class="footer-tag">LAMMONS STRATEGIC ROADMAP 2026 &copy; CONFIDENTIAL</div>
 
     <script>
         let currentSlide = 0;
@@ -728,6 +1056,23 @@
         });
 
         updateSlide();
+
+        // Background Particles
+        const particlesContainer = document.getElementById('particles');
+        const particleCount = 15;
+
+        for (let i = 0; i < particleCount; i++) {
+            const p = document.createElement('div');
+            p.className = 'particle';
+            const size = Math.random() * 3 + 1;
+            p.style.width = `${size}px`;
+            p.style.height = `${size}px`;
+            p.style.left = `${Math.random() * 100}%`;
+            p.style.top = `${Math.random() * 100}%`;
+            p.style.animationDelay = `${Math.random() * 15}s`;
+            p.style.animationDuration = `${10 + Math.random() * 10}s`;
+            particlesContainer.appendChild(p);
+        }
     </script>
 </body>
 </html>
